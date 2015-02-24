@@ -11,11 +11,6 @@ this file and include it in basic-server.js so that it actually works.
 *Hint* Check out the node module documentation at http://nodejs.org/api/modules.html.
 
 **************************************************************/
-
-var database = require("./database.js").database;
-var api = require("./api.js");
-
-var requestHandler = function(request, response) {
   // Request and Response come from node's http module.
   //
   // They include information about both the incoming request, such as
@@ -30,15 +25,25 @@ var requestHandler = function(request, response) {
   // Adding more logging to your server can be an easy way to get passive
   // debugging help, but you should always be careful about leaving stray
   // console.logs in your code.
-  console.log("Serving request type " + request.method + " for url " + request.url);
+  //console.log("Serving request type " + request.method + " for url " + request.url);
+
+var database = require("./database.js").database;
+var api = require("./api.js");
+
+var requestHandler = function(request, response) {
 
   var statusCode = 200;
   var object = {results: []};
 
   var resource = request.url.split('/')[1];
 
+  
+  var headers = defaultCorsHeaders;
+  headers['Content-Type'] = "text/plain";
+  
+
   if(api[resource]){
-    console.log(resource);
+
     if (request.method === 'POST'){
       var data = '';
       request.on('data', function(chunk){
@@ -55,6 +60,9 @@ var requestHandler = function(request, response) {
           database[request.url] = [message];
         }
         statusCode = 201;
+        var result = JSON.stringify(object);
+        response.writeHead(statusCode, headers);
+        response.end(result);
       });
     }
 
@@ -62,31 +70,39 @@ var requestHandler = function(request, response) {
       if(database[request.url]){
         //refactor into model
         object.results = database[request.url];
-        console.log(object.results);
       }
+      var result = JSON.stringify(object);
+      response.writeHead(statusCode, headers);
+      response.end(result);
     }
-
   } else {
     statusCode = 404;
+    response.writeHead(statusCode, headers);
+    response.end(result);
   }
+};
 
+var defaultCorsHeaders = {
+  "access-control-allow-origin": "*",
+  "access-control-allow-methods": "GET, POST, PUT, DELETE, OPTIONS",
+  "access-control-allow-headers": "content-type, accept",
+  "access-control-max-age": 10 // Seconds.
+};
 
-  var result = JSON.stringify(object);
+exports.requestHandler = requestHandler;
+
 
   // The outgoing status.
 
   // See the note below about CORS headers.
-  var headers = defaultCorsHeaders;
 
   // Tell the client we are sending them plain text.
   //
   // You will need to change this if you are sending something
   // other than plain text, like JSON or HTML.
-  headers['Content-Type'] = "text/plain";
 
   // .writeHead() writes to the request line and headers of the response,
   // which includes the status and all headers.
-  response.writeHead(statusCode, headers);
 
   // Make sure to always call response.end() - Node may not send
   // anything back to the client until you do. The string you pass to
@@ -95,8 +111,6 @@ var requestHandler = function(request, response) {
   //
   // Calling .end "flushes" the response's internal buffer, forcing
   // node to actually send all the data over to the client.
-  response.end(result);
-};
 
 // These headers will allow Cross-Origin Resource Sharing (CORS).
 // This code allows this server to talk to websites that
@@ -107,11 +121,3 @@ var requestHandler = function(request, response) {
 //
 // Another way to get around this restriction is to serve you chat
 // client from this domain by setting up static file serving.
-var defaultCorsHeaders = {
-  "access-control-allow-origin": "*",
-  "access-control-allow-methods": "GET, POST, PUT, DELETE, OPTIONS",
-  "access-control-allow-headers": "content-type, accept",
-  "access-control-max-age": 10 // Seconds.
-};
-
-exports.requestHandler = requestHandler;
