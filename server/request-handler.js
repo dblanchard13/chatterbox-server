@@ -28,6 +28,10 @@ this file and include it in basic-server.js so that it actually works.
   //console.log("Serving request type " + request.method + " for url " + request.url);
 
 var database = require("./database.js").database;
+var events = require('events');
+//var emitter = new events.EventEmitter();
+
+
 var api = require("./api.js");
 
 var endResponse = function(response, object, statusCode){
@@ -55,25 +59,20 @@ var requestHandler = function(request, response) {
 
       request.on('end', function(){
         var message = JSON.parse(data);
-        if(database[request.url]) {
-          //refactor into model
-          database[request.url].push(message);
-        } else {
-          //refactor into model
-          database[request.url] = [message];
-        }
-        //POST success
-        endResponse(response, object, 201)
+        database.set(request.url, message, function(){
+          //POST success
+          endResponse(response, object, 201);          
+        });
       });
     }
 
     if(request.method === 'GET'){
-      if(database[request.url]){
-        //refactor into model
-        object.results = database[request.url];
-      }
-      //GET success
-      endResponse(response, object, 200);
+      //refactor into model
+      database.get(request.url, function (result){
+        //GET success
+        object.results = result;
+        endResponse(response, object, 200);
+      });
     }
   } else {
     //404
