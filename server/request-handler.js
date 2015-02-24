@@ -12,6 +12,9 @@ this file and include it in basic-server.js so that it actually works.
 
 **************************************************************/
 
+var database = require("./database.js").database;
+var querystring = require("querystring");
+
 var requestHandler = function(request, response) {
   // Request and Response come from node's http module.
   //
@@ -29,6 +32,33 @@ var requestHandler = function(request, response) {
   // console.logs in your code.
   console.log("Serving request type " + request.method + " for url " + request.url);
 
+  var body = querystring.parse(request);
+  var object = {results: []};
+
+  if (request.method === 'POST'){
+    var data = '';
+    request.on('data', function(chunk){
+      data += chunk;
+    });
+
+    request.on('end', function(){
+      var message = JSON.parse(data);
+      if(database[request.url]) {
+        database[request.url].push(message);
+      } else {
+        database[request.url] = [message];
+      }
+    });
+  }
+
+  if(request.method === 'GET'){
+    if(database[request.url]){
+      object.results = database[request.url];      
+    }
+  }
+
+  var result = JSON.stringify(object);
+  console.log(object);
   // The outgoing status.
   var statusCode = 200;
 
@@ -52,7 +82,7 @@ var requestHandler = function(request, response) {
   //
   // Calling .end "flushes" the response's internal buffer, forcing
   // node to actually send all the data over to the client.
-  response.end("Hello, World!");
+  response.end(result);
 };
 
 // These headers will allow Cross-Origin Resource Sharing (CORS).
@@ -71,3 +101,4 @@ var defaultCorsHeaders = {
   "access-control-max-age": 10 // Seconds.
 };
 
+exports.requestHandler = requestHandler;
