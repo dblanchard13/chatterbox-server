@@ -25,13 +25,15 @@ this file and include it in basic-server.js so that it actually works.
   // Adding more logging to your server can be an easy way to get passive
   // debugging help, but you should always be careful about leaving stray
   // console.logs in your code.
-  //console.log("Serving request type " + request.method + " for url " + request.url);
+
+var defaultCorsHeaders = {
+  "access-control-allow-origin": "*",
+  "access-control-allow-methods": "GET, POST, PUT, DELETE, OPTIONS",
+  "access-control-allow-headers": "content-type, accept",
+  "access-control-max-age": 10 // Seconds.
+};
 
 var database = require("./database.js").database;
-var events = require('events');
-//var emitter = new events.EventEmitter();
-
-
 var api = require("./api.js");
 
 var endResponse = function(response, object, statusCode){
@@ -48,6 +50,11 @@ var requestHandler = function(request, response) {
   var object = {results: []};
   var resource = request.url.split('/')[1];
 
+  console.log("Serving request type " + request.method + " for url " + request.url);
+  //console.log('server hit', resource);
+  if (request.method === 'OPTIONS'){
+    endResponse(response, object, 200);
+  }
   
   if(api[resource]){
 
@@ -59,33 +66,30 @@ var requestHandler = function(request, response) {
 
       request.on('end', function(){
         var message = JSON.parse(data);
+
         database.set(request.url, message, function(){
-          //POST success
-          endResponse(response, object, 201);          
-        });
+          //console.log('set something!', result);
+          endResponse(response, object, 201)
+        })
+
       });
     }
 
     if(request.method === 'GET'){
-      //refactor into model
       database.get(request.url, function (result){
-        //GET success
+      //get success
+        //console.log('got something!', result);
         object.results = result;
         endResponse(response, object, 200);
       });
     }
+
   } else {
     //404
     endResponse(response, object, 404);
   }
 };
 
-var defaultCorsHeaders = {
-  "access-control-allow-origin": "*",
-  "access-control-allow-methods": "GET, POST, PUT, DELETE, OPTIONS",
-  "access-control-allow-headers": "content-type, accept",
-  "access-control-max-age": 10 // Seconds.
-};
 
 exports.requestHandler = requestHandler;
 
