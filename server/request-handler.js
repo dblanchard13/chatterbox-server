@@ -38,6 +38,7 @@ var requestHandler = function(request, response) {
   var resource = request.url.split('/')[1];
 
   if(api[resource]){
+    console.log(resource);
     if (request.method === 'POST'){
       var data = '';
       request.on('data', function(chunk){
@@ -47,23 +48,24 @@ var requestHandler = function(request, response) {
       request.on('end', function(){
         var message = JSON.parse(data);
         if(database[request.url]) {
+          //refactor into model
           database[request.url].push(message);
         } else {
+          //refactor into model
           database[request.url] = [message];
         }
-        // console.log(database);
         statusCode = 201;
-
       });
     }
 
     if(request.method === 'GET'){
       if(database[request.url]){
+        //refactor into model
         object.results = database[request.url];
-      } else {
-        // statusCode = 404;
+        console.log(object.results);
       }
-    }  
+    }
+
   } else {
     statusCode = 404;
   }
