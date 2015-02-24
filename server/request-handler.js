@@ -30,18 +30,21 @@ this file and include it in basic-server.js so that it actually works.
 var database = require("./database.js").database;
 var api = require("./api.js");
 
+var endResponse = function(response, object, statusCode){
+  statusCode = statusCode || 200;  
+  var headers = defaultCorsHeaders;
+  headers['Content-Type'] = "text/plain";
+  var result = JSON.stringify(object);
+  response.writeHead(statusCode, headers);
+  response.end(result);
+}
+
 var requestHandler = function(request, response) {
 
-  var statusCode = 200;
   var object = {results: []};
-
   var resource = request.url.split('/')[1];
 
   
-  var headers = defaultCorsHeaders;
-  headers['Content-Type'] = "text/plain";
-  
-
   if(api[resource]){
 
     if (request.method === 'POST'){
@@ -59,10 +62,8 @@ var requestHandler = function(request, response) {
           //refactor into model
           database[request.url] = [message];
         }
-        statusCode = 201;
-        var result = JSON.stringify(object);
-        response.writeHead(statusCode, headers);
-        response.end(result);
+        //POST success
+        endResponse(response, object, 201)
       });
     }
 
@@ -71,14 +72,12 @@ var requestHandler = function(request, response) {
         //refactor into model
         object.results = database[request.url];
       }
-      var result = JSON.stringify(object);
-      response.writeHead(statusCode, headers);
-      response.end(result);
+      //GET success
+      endResponse(response, object, 200);
     }
   } else {
-    statusCode = 404;
-    response.writeHead(statusCode, headers);
-    response.end(result);
+    //404
+    endResponse(response, object, 404);
   }
 };
 
