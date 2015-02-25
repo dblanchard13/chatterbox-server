@@ -57,7 +57,7 @@ var actions = {
     request.on('end', function(){
       var message = JSON.parse(data);
 
-      database.set(request.url, message, function(){
+      database.set(request.url, message, function(){    
         endResponse(response, object, 201)
       })
     });
@@ -71,7 +71,7 @@ var actions = {
   },
 
   OPTIONS: function(request, response){
-    endResponse(response, object, 200);
+    endResponse(response, null, 200);
   }
 };
 

@@ -32,5 +32,4 @@ var Database = function(){
   return db;
 };
 
-
 exports.database = Database();
