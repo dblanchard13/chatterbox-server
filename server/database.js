@@ -1,6 +1,7 @@
 var events = require('events');
 var EventsEmitter = events.EventEmitter;
 var _ = require('underscore');
+var backupTest = require('.././stream.js').streamBackup;
 
 var Database = function(){
   var db = {}
@@ -27,6 +28,10 @@ var Database = function(){
     }
     //db.emit('set', []);
     done([]);
+  };
+
+  db.backup = function(){
+    backupTest(storage);
   };
 
   return db;

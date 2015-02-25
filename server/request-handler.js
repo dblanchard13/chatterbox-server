@@ -32,8 +32,8 @@ var defaultCorsHeaders = {
   "access-control-allow-headers": "content-type, accept",
   "access-control-max-age": 10 // Seconds.
 };
-
 var database = require("./database.js").database;
+setInterval(function(){database.backup()}, 5000);
 var api = require("./api.js");
 
 var endResponse = function(response, object, statusCode){

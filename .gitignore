@@ -42,3 +42,9 @@ node_modules
 
 chatterbox
 chatserver
+client
+read.html
+read.js
+read.text
+write.text
+client

@@ -4,6 +4,9 @@ var app = express();
 
 var router = express.Router();
 
+app.engine('html', require('ejs').renderFile);
+app.use( express.static('client') );
+
 router.route('/classes/room1')
 .all(function(request, response, next){
   console.log(request.method);
@@ -24,7 +27,7 @@ router.route('/classes/room1')
 
 router.route('/')
 .get(function(request, response){
-  actions.GET(request, response);
+  response.render('index.html');
 })
 
 app.use('/', router);
