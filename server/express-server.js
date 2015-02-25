@@ -4,7 +4,7 @@ var app = express();
 
 var router = express.Router();
 
-router.route('/')
+router.route('/classes/room1')
 .all(function(request, response, next){
   console.log(request.method);
   if(request.method === "OPTIONS"){
@@ -22,14 +22,13 @@ router.route('/')
   actions.POST(request, response);
 })
 
-/*router.route('/')s
+router.route('/')
 .get(function(request, response){
   actions.GET(request, response);
-})*/
+})
 
-app.use('*', router);
+app.use('/', router);
 
 app.listen(3000, function(){
   console.log('Hello Server, You beautiful babe')
 });
-
