@@ -71,7 +71,7 @@ var actions = {
   },
 
   OPTIONS: function(request, response){
-    endResponse(response, null, 200);
+    endResponse(response, {}, 200);
   }
 };
 
@@ -91,7 +91,7 @@ var requestHandler = function(request, response) {
   }
 };
 
-
+exports.actions = actions;
 exports.requestHandler = requestHandler;
 
 
